@@ -8,51 +8,10 @@
   <input type="text" id="code" placeholder="Código" required>
   <input type="number" id="stock" placeholder="Stock" required>
   <input type="text" id="category" placeholder="Categoría" required>
-  <input type="text" id="status" placeholder="Estado" required>
+
   <button type="submit">Agregar Producto</button>
 </form>
 
 
-
-<script>
-  document.getElementById('formAgregarProducto').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    
-    const producto = {
-        title: document.getElementById('title').value,
-        description: document.getElementById('description').value,
-        price: parseFloat(document.getElementById('price').value),
-        code: document.getElementById('code').value,
-        stock: parseInt(document.getElementById('stock').value),
-        category: document.getElementById('category').value,
-        status: document.getElementById('status').value
-    };
-
-    
-    fetch('/api/products', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(producto)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("El código debe ser único");
-        }
-        return response.json();
-    })
-    .then(data =>  {
-        console.log("Producto agregado:", data);
-    })
-    .catch(error => {
-        console.error("Error al agregar producto:", error.message);
-    });
-});
-
-
-
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="/static/js/main.js"></script>

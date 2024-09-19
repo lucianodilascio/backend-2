@@ -6,7 +6,7 @@ class ProductManager {
     async addProduct({ title, description, price, code, img, stock, status, category, thumbnails }) {
         try {
             
-            if (!title || !description || !price || !code || !stock || !category || !status || !thumbnails) {
+            if (!title || !description || !price || !code || !stock || !category) {
                 console.log("Todos los campos son obligatorios");
                 return;
             }
@@ -41,7 +41,7 @@ class ProductManager {
     }
 
 
-    async getProducts({ limit = 10, page = 1, sort, query } = {}) {
+     async getProducts({ limit = 10, page = 1, sort, query } = {}) {
         try {
             const skip = (page - 1) * limit;
     
@@ -84,7 +84,7 @@ class ProductManager {
             console.log("Error al obtener los productos", error);
             throw error;
         }
-    }
+    } 
 
     async getProductById(id) {
         try {
@@ -126,7 +126,9 @@ class ProductManager {
                 console.log("no se puede encontrar el producto");
                 return null;
             }
-            console.log("producto eliminado correctamente") 
+
+            console.log("producto eliminado correctamente");
+
         } catch (error) {
             console.log("Tenemos un error al eliminar productos ", error);
         }

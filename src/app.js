@@ -19,10 +19,10 @@ const PUERTO = 8080;
 const manager = new ProductManager();
 
 
-app.use((req, res, next) => {
-  req.manager = manager;
-  next();
-});
+// app.use((req, res, next) => {
+//   req.manager = manager;
+//   next();
+// });
 
 
 app.engine("handlebars", exphbs.engine());
@@ -50,19 +50,34 @@ const io = new Server(httpServer);
 io.on("connection", async (socket) => {
   console.log("Un cliente se comunica conmigo");
 
- 
-  socket.emit("productos", await manager.getProducts());
+    const productos = await manager.getProducts()
 
-  
+
+  socket.emit("productos", productos.docs);
+
+  ///////////////////
+
+
   socket.on("eliminarProducto", async (id) => {
-    await manager.deleteProduct(parseInt(id));
-    io.sockets.emit("productos", await manager.getProducts());
+
+    await manager.deleteProduct(id);
+
+    const productosActualizados = await manager.getProducts();
+
+    io.sockets.emit("productos", productosActualizados.docs);
   });
 
   
   socket.on("nuevoProducto", async (producto) => {
+
+    console.log(producto);
+    const { title, description, price, code, stock, category } = producto
+
     await manager.addProduct(producto);
-    io.sockets.emit("productos", await manager.getProducts());
+
+    const productosActualizados = await manager.getProducts();
+
+   io.sockets.emit("productos", productosActualizados.docs);
   });
 });
 

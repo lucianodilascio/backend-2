@@ -28,7 +28,9 @@ router.use("/static", express.static("./src/public"));
 router.get("/realtimeproducts", async (req, res) => {
   try {
     const productos = await req.manager.getProducts();
-    res.render("realtimeproducts", { productos });
+    res.render("realtimeproducts", { productos: productos.docs });
+    
+    
   } catch (error) {
     console.error("Error al obtener productos:", error);
     res.status(500).send("Error interno del servidor");
