@@ -6,6 +6,8 @@ import viewsRouter from "./routes/views.router.js";
 import productRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import ProductManager from "./dao/db/product-manager-db.js";
+import cookieParser from "cookie-parser";
+import session from "express-session";
 import "./database.js"; 
 
 
@@ -33,11 +35,92 @@ app.set("views", "./src/views");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/static", express.static("./src/public"));
+//app.use(cookieParser());
+
+
 
 
 app.use("/", viewsRouter);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartsRouter);
+
+
+//PRUEBA DE SETEO Y LECTURA Y ELIMINACIÓN DE COOKIES:
+
+//SETEO DE COOKIE:
+
+app.get("/setcookie", (req, res) => {
+  //se usa el objeto "res" para setearle una cookie al cliente
+  res.cookie("cookiePrueba", "Mi primera cookie", {maxAge: 5000}). send("cookie seteada");
+})
+//el maxAge determina el tiempo que va a vivir en el navegador la cookie, si no seteamos nada vive eternamente.
+
+
+//  FIRMAR una cookie: es un factor de "seguridad" que invalida la cookie en caso de que sea modificada, es inevitable que alguien externo la modifique, pero en caso de detectar este movimiento de alteración, se la pasa a la cookie como "alterada" y por lo tanto se INVALIDA.
+
+const claveSecreta = "claveprohibida";
+app.use(cookieParser(claveSecreta));
+
+//Midleware de SESSION:
+app.use(session({
+  secret: "secretCoder",
+  resave: true,
+  //resave en "true" me permite mantener activa la sesión frente a la inactividad del usuario. si se deja en FALSE, la sesión morira en caso de que exista cierto tiempo de inactividad.
+
+  saveUninitialized: true,
+  //saveUnitialized en "true" permite guardar cualquier sesión aun cuando el objeto de la sesión no contenga nada. si se deja en FALSE la sesion no se guarda si el objeto de sesión esta vacio al final de la consulta.
+
+}))
+
+// Levantamos la SESSION en el endpoint contador:
+
+app.get("/contador", (req, res) => {
+  if(req.session.counter) {
+    req.session.counter++;
+    res.send("se visitó el sitio: " + req.session.counter + " veces");
+  } else {
+    req.session.counter = 1;
+    res.send("Bienvenido!")
+  }
+})
+
+
+//enviamos una COOKIE FIRMADA: 
+
+app.get("/cookiefirmada", (req, res) => {
+  res.cookie("cookieFirmada", "mensaje secreto", { signed: true}).send("cookie firmada enviada");
+})
+
+//OBTENEMOS uan cookie firmada
+
+app.get("/recuperamoscookiefirmada", (req, res) =>{
+  let valorCookie = req.signedCookies.cookieFirmada;
+
+  if (valorCookie) {
+    res.send("cookie recuperada: " + valorCookie)
+  }
+  else {
+res.send("cookie invalida");
+  }
+})
+//LEER UNA COOKIE:
+
+app.get("/leercookie", (req, res) => {
+  res.send(req.cookies.cookiePrueba);
+})
+
+//ELIMINACION DE COOKIE:
+
+app.get("/borrarcookie", (req, res) => {
+  res.clearCookie("cookiePrueba").send("cookie eliminada");
+})
+
+
+
+
+//  FIRMAR una cookie: es un factor de "seguridad" que invalida la cookie en caso de que sea modificada, es inevitable que alguien externo la modifique, pero en caso de detectar este movimiento de alteración, se la pasa a la cookie como "alterada" y por lo tanto se INVALIDA.
+
+
 
 
 
