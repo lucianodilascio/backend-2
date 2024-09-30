@@ -8,8 +8,15 @@ import cartsRouter from "./routes/carts.router.js";
 import ProductManager from "./dao/db/product-manager-db.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import FileStore from "session-file-store";
+import MongoStore from "connect-mongo";
 import "./database.js"; 
 
+
+//File Storage
+const fileStore = FileStore(session);
+
+//MongoDB:
 
 
 
@@ -21,10 +28,7 @@ const PUERTO = 8080;
 const manager = new ProductManager();
 
 
-// app.use((req, res, next) => {
-//   req.manager = manager;
-//   next();
-// });
+
 
 
 app.engine("handlebars", exphbs.engine());
@@ -64,11 +68,31 @@ app.use(cookieParser(claveSecreta));
 //Midleware de SESSION:
 app.use(session({
   secret: "secretCoder",
+//valor para firmar las cookies
+
   resave: true,
   //resave en "true" me permite mantener activa la sesión frente a la inactividad del usuario. si se deja en FALSE, la sesión morira en caso de que exista cierto tiempo de inactividad.
 
   saveUninitialized: true,
   //saveUnitialized en "true" permite guardar cualquier sesión aun cuando el objeto de la sesión no contenga nada. si se deja en FALSE la sesion no se guarda si el objeto de sesión esta vacio al final de la consulta.
+
+
+  //2DA opcion, usando FILE STORAGE:
+
+
+//  store: new fileStore({path: "./src/sessions", ttl: 1000, retries: 1})
+
+//path: se guarda la ruta de los archivos
+//ttl (Time to live): tiempo que vivirá la session
+//retries: cantidad de veces que el servidor intentará leer el archivo.
+
+
+//3ra opcion, usar Mongo Storage:
+
+store: MongoStore.create({
+  mongoUrl: "mongodb+srv://lucianodilascio14:coderluciano@cluster0.kdcns.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0", ttl: 100
+})
+
 
 }))
 
@@ -121,6 +145,8 @@ app.get("/borrarcookie", (req, res) => {
 //  FIRMAR una cookie: es un factor de "seguridad" que invalida la cookie en caso de que sea modificada, es inevitable que alguien externo la modifique, pero en caso de detectar este movimiento de alteración, se la pasa a la cookie como "alterada" y por lo tanto se INVALIDA.
 
 
+
+//FILE STORAGE: permite la persistencia de sesiones aun cuando se reinicia el servidor
 
 
 
