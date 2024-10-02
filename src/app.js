@@ -11,8 +11,7 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import "./database.js";
 import passport from "passport";
-import initializePassport
- from "./config/passport.config.js";
+import initializePassport from "./config/passport.config.js";
 
 
 const app = express();

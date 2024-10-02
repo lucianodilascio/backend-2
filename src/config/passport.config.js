@@ -7,7 +7,6 @@ import UserModel from "../dao/models/user.model.js";
 import { createHash, isValidPassword } from "../utils/util.js";
 
 //trabajamos con GITHUB:
-
 import GitHubStrategy from "passport-github2";
 ///////////////////////////////////////////////////
 
