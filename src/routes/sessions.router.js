@@ -1,77 +1,109 @@
 import { Router } from "express";
 const router = Router();
 import UserModel from "../dao/models/user.model.js";
+import { createHash, isValidPassword } from "../utils/util.js";
+import passport from "passport";
+import generateToken from "../utils/jsonwebtoken.js";
 
 
-//Ruta POST para REGISTRAR un nuevo usuario
+
+
+//REGISTRO CON JWT (json web token)
+
+
 
 router.post("/register", async (req, res) => {
 
-    let { first_name, last_name, email, password, age } = req.body;
+    const { first_name, last_name, email, password, age } = req.body;
 
     try {
-        //verificamos si el email ya está registrado
-        const userExist = await UserModel.findOne({ email: email });
+        const userExist = await UserModel.findOne({ email });
+        //verificamos si el usuario ya existe
         if (userExist) {
-            return res.send("el correo ya esta registrado")
+            return res.send("el mail ya esta registrado");
         }
 
-        // Si no está registrado, creamos nuevo usuario:
-
+        //si no existe creamos uno nuevo
         const newUser = await UserModel.create({
             first_name,
             last_name,
             email,
-            password,
-            age,
-        })
+            password: createHash(password),
+            age
+        });
 
-        //una vez creado, almacenamos al usuario en la session:
-        req.session.user = {
+        //generamos el token ahora
+        const token = generateToken({
             first_name: newUser.first_name,
             last_name: newUser.last_name,
-            email: newUser.email,
-        }
+            email: newUser.email
+        });
 
-        req.session.login = true;
-
-        res.status(201).send("usuario creado exitosamente");
-
+        res.status(201).send({ message: "usuario creado", token })
     } catch (error) {
-        res.status(500).send("error interno del servidor", error);
-
+        res.status(500).send("error fatal")
     }
 
 })
 
-//Ruta para el LOGIN:
+
+//LOGIN con JWT:
+
 
 router.post("/login", async (req, res) => {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
 
     try {
-       const userSearched = await UserModel.findOne({ email: email });
-        if (userSearched) {
-            if (userSearched.password === password) {
-                req.session.user = {
-                    first_name: userSearched.first_name,
-                    last_name: userSearched.last_name,
-                    email: userSearched.email,
-                }
-
-                req.session.login = true;
-
-                res.redirect("/profile");
-            } else {
-                res.status(401).send("contraseña incorrecta");
-            }
-        } else {
-            res.status(404).send("usuario no encontrado");
+        const usuario = await UserModel.findOne({ email });
+        if (!usuario) {
+            return res.send("usuario no encontrado")
         }
-    } catch (error) {
-        res.status(500).send("error interno del servidor", error)
-    }
+        if (!isValidPassword(password, usuario)) {
+            return res.send("credenciales invalidas");
+        }
+        //si la contraseña es correcta, se genera el token
+        const token = generateToken({
+            first_name: usuario.first_name,
+            last_name: usuario.last_name,
+            email: usuario.email,
+            age: usuario.age
+        })
 
+        res.send({ message: "Logueado con éxito!", token });
+    } catch (error) {
+        res.status(500).send("error en el logueo")
+    }
+})
+
+
+
+
+//Ruta para el LOGOUT 
+
+
+router.get("/logout", (req, res) => {
+    if (req.session.login) {
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Error al destruir la sesión:", err);
+                return res.status(500).send("Error al cerrar la sesión");
+            }
+            res.redirect("/login");
+        });
+    } else {
+        res.redirect("/login");
+    }
+});
+
+//VERSION PARA GITHUB:
+
+router.get("/github", passport.authenticate("github", { scope: ["user:email"] }), (req, res) => { })
+
+router.get("/githubcallback", passport.authenticate("github", { failureRedirect: "/login" }), async (req, res) => {
+    //la estrategia de GitHub nos retorna el usuario, entonces lo agregamos a nuestro objeto de session:
+    req.session.user = req.user;
+    req.session.login = true;
+    res.redirect("/profile");
 })
 
 
