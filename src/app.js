@@ -31,23 +31,17 @@ app.use("/static", express.static("./src/public"));
 //app.use(cookieParser());
 
 
-app.use(session({
-  secret: "secretCoder",
-  //valor para firmar las cookies
-  resave: false,
-  //resave en "true" me permite mantener activa la sesión frente a la inactividad del usuario. si se deja en FALSE, la sesión morira en caso de que exista cierto tiempo de inactividad.
-
-  saveUninitialized: false,
-  //saveUnitialized en "true" permite guardar cualquier sesión aun cuando el objeto de la sesión no contenga nada. si se deja en FALSE la sesion no se guarda si el objeto de sesión esta vacio al final de la consulta.
-
-  // usar Mongo Storage:
-  store: MongoStore.create({
-    mongoUrl: "mongodb+srv://lucianodilascio14:coderluciano@cluster0.kdcns.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0", ttl: 100
-  })
-
-}))
-
 //cambios para usar PASSPORT: 
+
+app.use(session({
+  secret: 'claveprohibida', // Puedes mantener tu clave secreta o cambiarla
+  resave: false, // No vuelve a guardar la sesión si no hay modificaciones
+  saveUninitialized: false, // No guarda sesiones vacías
+  store: MongoStore.create({
+    mongoUrl: 'mongodb://localhost:27017/tuBaseDeDatos', // Cambia 'tuBaseDeDatos' por el nombre de tu base de datos en MongoDB
+    ttl: 14 * 24 * 60 * 60 // Tiempo de vida de la sesión en segundos (14 días)
+  })
+}));
 
 initializePassport();
 app.use(passport.initialize());
@@ -64,13 +58,9 @@ const claveSecreta = "claveprohibida";
 app.use(cookieParser(claveSecreta));
 
 
-
-
 //LOGIN Y REGISTRO
 
 app.use("/api/sessions", sessionsRouter);
-
-
 
 
 

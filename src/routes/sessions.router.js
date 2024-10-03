@@ -1,6 +1,7 @@
 import { Router } from "express";
 const router = Router();
 import UserModel from "../dao/models/user.model.js";
+import jwt from "jsonwebtoken";
 import { createHash, isValidPassword } from "../utils/util.js";
 import passport from "passport";
 import generateToken from "../utils/jsonwebtoken.js";
@@ -33,18 +34,32 @@ router.post("/register", async (req, res) => {
         });
 
         //generamos el token ahora
-        const token = generateToken({
-            first_name: newUser.first_name,
-            last_name: newUser.last_name,
-            email: newUser.email
-        });
+        const token = jwt.sign({user: { first_name: newUser.first_name, last_name: newUser.last_name, age: newUser.age, email: newUser.email }} , "coderhouse", { expiresIn: "2h"});
 
-        res.status(201).send({ message: "usuario creado", token })
+        //creamos la cookie
+
+        res.cookie("coderCookieToken", token, {maxAge: 3600000, httpOnly: true});
+
+        res.redirect("current");
     } catch (error) {
         res.status(500).send("error fatal")
     }
 
 })
+
+
+//PROFILE con JWT:
+
+
+router.get("/current", passport.authenticate("current", {session: false}), (req, res) => {
+
+    res.render("profile", {user: req.user.user});
+
+});
+
+
+
+
 
 
 //LOGIN con JWT:
@@ -56,20 +71,19 @@ router.post("/login", async (req, res) => {
     try {
         const usuario = await UserModel.findOne({ email });
         if (!usuario) {
-            return res.send("usuario no encontrado")
+            return res.status(401).send("Usuario no identificado");
         }
         if (!isValidPassword(password, usuario)) {
-            return res.send("credenciales invalidas");
+            return res.status(401).send("credenciales invalidas");
         }
-        //si la contraseña es correcta, se genera el token
-        const token = generateToken({
-            first_name: usuario.first_name,
-            last_name: usuario.last_name,
-            email: usuario.email,
-            age: usuario.age
-        })
+        //generamos el token ahora
+        const token = jwt.sign({user: { first_name: usuario.first_name, last_name: usuario.last_name, age: usuario.age, email: usuario.email }} , "coderhouse", { expiresIn: "2h"});
 
-        res.send({ message: "Logueado con éxito!", token });
+        //creamos la cookie
+
+        res.cookie("coderCookieToken", token, {maxAge: 3600000, httpOnly: true});
+
+        res.redirect("current");
     } catch (error) {
         res.status(500).send("error en el logueo")
     }
@@ -81,18 +95,11 @@ router.post("/login", async (req, res) => {
 //Ruta para el LOGOUT 
 
 
-router.get("/logout", (req, res) => {
-    if (req.session.login) {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error("Error al destruir la sesión:", err);
-                return res.status(500).send("Error al cerrar la sesión");
-            }
-            res.redirect("/login");
-        });
-    } else {
-        res.redirect("/login");
-    }
+router.post("/logout", (req, res) => {
+
+    res.clearCookie("cookieTokenJc");
+    res.redirect("/login");
+
 });
 
 //VERSION PARA GITHUB:
