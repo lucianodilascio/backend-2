@@ -24,6 +24,9 @@ router.post("/register", async (req, res) => {
             return res.send("el mail ya esta registrado");
         }
 
+        const newCart = new CartModel();
+        await newCart.save();
+        
         //si no existe creamos uno nuevo
         const newUser = await UserModel.create({
             first_name,
