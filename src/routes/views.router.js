@@ -5,11 +5,12 @@ import cartsRouter from "./carts.router.js";
 import ProductManager from "../dao/db/product-manager-db.js";
 import multer from "multer";
 import ProductModel from "../dao/models/product.model.js";
+import { onlyAdmin, onlyUser } from "../middleware/auth.js";
 
 const router = Router();
 
-
 const productManager = new ProductManager();
+
 
 
 router.use((req, res, next) => {
@@ -25,7 +26,7 @@ router.use("/api/carts", cartsRouter);
 router.use("/static", express.static("./src/public"));
 
 
-router.get("/realtimeproducts", async (req, res) => {
+router.get("/realtimeproducts", onlyAdmin , async (req, res) => {
   try {
     const productos = await req.manager.getProducts();
     res.render("realtimeproducts", { productos: productos.docs });
@@ -38,7 +39,7 @@ router.get("/realtimeproducts", async (req, res) => {
 });
 
 
-router.get("/products", async (req, res) => {
+router.get("/products", onlyUser, async (req, res) => {
 
   let page = req.query.page || 1;
   let limit = req.query.limit || 3;

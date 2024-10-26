@@ -1,8 +1,19 @@
-<h1 class="text-center">TIENDA TODO-COMIDAS</h1>
+<h1 class="text-center">MI TIENDA</h1>
 
+<!-- Mostrar bienvenida al usuario -->
+{{#if user}}
+    <h2 class="text-center">Bienvenido, {{user.usuario}}!</h2>
+    <p>Email: {{user.email}}</p>
+    <p>Rol: {{user.role}}</p>
+{{else}}
+    <h2 class="text-center">¡Bienvenido, visitante!</h2>
+{{/if}}
+
+<form action="/api/sessions/logout" method="POST">
+    <button type="submit">Logout</button>
+</form>
 
 <h1 class="text-center">Listado de Productos</h1>
-
 
 <div class="container">
     <div class="row">

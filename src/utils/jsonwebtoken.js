@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const private_key = "palabrasecretaparatoken";
+const private_key = "coderCookieToken";
 
 const generateToken = (user) => {
     const token = jwt.sign(user, private_key, {expiresIn: "24h"}); 
