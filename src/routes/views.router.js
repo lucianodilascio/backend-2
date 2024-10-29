@@ -6,17 +6,11 @@ import ProductManager from "../dao/db/product-manager-db.js";
 import multer from "multer";
 import ProductModel from "../dao/models/product.model.js";
 import { onlyAdmin, onlyUser } from "../middleware/auth.js";
+import passport from "passport";
 
 const router = Router();
 
-const productManager = new ProductManager();
-
-
-
-router.use((req, res, next) => {
-  req.manager = productManager;
-  next();
-});
+ const productManager = new ProductManager();
 
 
 router.use("/api/products", productRouter);
@@ -26,9 +20,9 @@ router.use("/api/carts", cartsRouter);
 router.use("/static", express.static("./src/public"));
 
 
-router.get("/realtimeproducts", onlyAdmin , async (req, res) => {
+router.get("/realtimeproducts", passport.authenticate("current", { session: false }), onlyAdmin, async (req, res) => {
   try {
-    const productos = await req.manager.getProducts();
+    const productos = await productManager.getProducts();
     res.render("realtimeproducts", { productos: productos.docs });
 
 
@@ -39,18 +33,21 @@ router.get("/realtimeproducts", onlyAdmin , async (req, res) => {
 });
 
 
-router.get("/products", onlyUser, async (req, res) => {
+router.get("/products", passport.authenticate("current", { session: false }), onlyUser, async (req, res) => {
 
   let page = req.query.page || 1;
   let limit = req.query.limit || 3;
+  const user = req.user;
 
   const productosLista = await ProductModel.paginate({}, { limit, page });
   const productosListaFinal = productosLista.docs.map(elemento => {
     const { _id, ...rest } = elemento.toObject();
     return rest
-  })
+  });
+
 
   res.render("home", {
+    user: user,
     productos: productosListaFinal,
     hasPrevPage: productosLista.hasPrevPage,
     hasNextPage: productosLista.hasNextPage,
@@ -63,25 +60,21 @@ router.get("/products", onlyUser, async (req, res) => {
 )
 
 router.get("/login", (req, res) => {
-  if(req.session.login) {
-    return res.redirect("/profile");
-  }
   res.render("login");
+
 })
 
 router.get("/register", (req, res) => {
-  if(req.session.login) {
-    return res.redirect("/profile");
-  }
   res.render("register");
 })
 
-router.get("/profile", (req, res) => {
-if(!req.session.login) {
-  return res.redirect("/login");
-}
-  res.render("profile", {user: req.session.user});
-})
+
+// router.get("/profile", (req, res) => {
+// if(!req.session.login) {
+//   return res.redirect("/login");
+// }
+//   res.render("profile", {user: req.session.user});
+// })
 
 
 const storage = multer.diskStorage({

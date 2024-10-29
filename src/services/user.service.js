@@ -8,6 +8,10 @@ async registerUser(userData) {
     const existingUser = await userRepository.getUserByEmail(userData.email);
     if(existingUser) throw new Error ("el usuario ya existe");
 
+    const newCart = await cartService.createCart();
+   
+    userData.cart = newCart._id;
+
     userData.password = createHash(userData.password);
     return await userRepository.createUser(userData);
 }

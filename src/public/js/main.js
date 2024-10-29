@@ -84,25 +84,6 @@ document.getElementById('formAgregarProducto').addEventListener('submit', (e) =>
   socket.emit("nuevoProducto", producto);
 
   
-  // fetch('/api/products', {
-  //     method: 'POST',
-  //     headers: {
-  //         'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify(producto)
-  // })
-  // .then(response => {
-  //     if (!response.ok) {
-  //         throw new Error("El código debe ser único");
-  //     }
-  //     return response.json();
-  // })
-  // .then(data =>  {
-  //     console.log("Producto agregado:", data);
-  // })
-  // .catch(error => {
-  //     console.error("Error al agregar producto:", error.message);
-  // });
-
+  
 
 });

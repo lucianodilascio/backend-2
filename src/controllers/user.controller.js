@@ -1,5 +1,6 @@
 import userService from "../services/user.service.js";
 import jwt from "jsonwebtoken";
+import UserDTO from "../dto/user.dto.js";
 
 
 class UserController {
@@ -37,7 +38,7 @@ class UserController {
             res.redirect("/api/sessions/current");
 
         } catch (error) {
-            res.status(500).send({ error: error });
+            res.status(401).json({ error: error.message });
         }
     }
 
@@ -45,7 +46,8 @@ class UserController {
     async current(req, res) {
         if (req.user) {
             const user = req.user;
-            res.render("home",  {user: req.user});
+            const userDTO = new UserDTO(user); 
+            res.render("home", {user: userDTO});
         } else {
             res.send("autorizacion denegada")
 

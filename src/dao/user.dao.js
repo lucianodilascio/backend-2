@@ -31,10 +31,6 @@ class UserDao {
 
     }
 
-
-
-
-
 }
 
 export default new UserDao();

@@ -1,0 +1,10 @@
+<h1>Admin profile</h1>
+
+<h3>{{user.first_name}}</h3>
+<h3>{{user.last_name}}</h3>
+<h6>{{user.age}}</h6>
+<h6>{{user.email}}</h6>
+
+<form action="/api/sessions/logout" method="POST">
+    <button type="submit"> Cerrar Sesión </button>
+</form>

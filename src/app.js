@@ -7,8 +7,6 @@ import productRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import ProductManager from "./dao/db/product-manager-db.js";
 import cookieParser from "cookie-parser";
-import session from "express-session";
-import MongoStore from "connect-mongo";
 import "./database.js";
 import passport from "passport";
 import initializePassport from "./config/passport.config.js";
@@ -31,21 +29,14 @@ app.use("/static", express.static("./src/public"));
 //app.use(cookieParser());
 
 
-//cambios para usar PASSPORT: 
 
-app.use(session({
-  secret: 'claveprohibida', // Puedes mantener tu clave secreta o cambiarla
-  resave: false, // No vuelve a guardar la sesión si no hay modificaciones
-  saveUninitialized: false, // No guarda sesiones vacías
-  store: MongoStore.create({
-    mongoUrl: 'mongodb://localhost:27017/tuBaseDeDatos', // Cambia 'tuBaseDeDatos' por el nombre de tu base de datos en MongoDB
-    ttl: 14 * 24 * 60 * 60 // Tiempo de vida de la sesión en segundos (14 días)
-  })
-}));
 
-initializePassport();
+
+const claveSecreta = "claveprohibida";
+app.use(cookieParser(claveSecreta));
 app.use(passport.initialize());
-app.use(passport.session());
+initializePassport();
+
 
 
 
@@ -54,8 +45,7 @@ app.use("/api/products", productRouter);
 app.use("/api/carts", cartsRouter);
 
 
-const claveSecreta = "claveprohibida";
-app.use(cookieParser(claveSecreta));
+
 
 
 //LOGIN Y REGISTRO
@@ -103,5 +93,4 @@ io.on("connection", async (socket) => {
     io.sockets.emit("productos", productosActualizados.docs);
   });
 });
-
 
