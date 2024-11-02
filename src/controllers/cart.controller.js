@@ -1,4 +1,8 @@
 import { cartService } from "../services/index.js";
+import { productService } from "../services/index.js";
+import userService from "../services/user.service.js";
+import TicketModel from "../dao/models/ticket.model.js";
+import {totalCalc, randomCode} from "../utils/util.js";
 
 class CartController {
 
@@ -117,6 +121,56 @@ class CartController {
             res.send(cart);
         } catch (error) {
             res.status(500).send("error al actualizar el carrito", error);
+        }
+    }
+
+    async finishPurchase(req, res){
+        const cartId = req.params.cid;
+
+        try {
+
+            const cart = await cartService.getCartById(cartId);
+            if(!cart) return res.status(404).send("Carrito no encontrado");
+
+            const products = cart.products;
+
+            const notAvailableProducts = [];
+
+            for(const item of products){
+                const productId = item.product;
+                const product = await productService.getProductById(productId);
+
+            
+                if(product.stock >= item.quantity){
+                    product.stock -= item.quantity;
+                    await product.save();
+                } else {
+                    notAvailableProducts.push(productId);
+                }
+            }
+
+            const userWcart = await userService.getUserByCart({ cart: cartId });
+            console.log(userWcart);
+            
+            const ticket = new TicketModel({
+                code: randomCode(8),
+                purchase_datetime: new Date(),
+                amount: totalCalc(cart.products),
+                purchaser: userWcart._id
+            });
+
+            await ticket.save();
+
+            cart.products = cart.products.filter( item => notAvailableProducts.some(pid => pid.equals(item.product)));
+
+            await cart.save();
+
+            res.json( {user: userWcart.first_name, email: userWcart.email, ticketNumber: ticket._id, date: ticket.purchase_datetime});
+
+            
+        } catch (error) {
+            console.error("Error al procesar el pedido ", error);
+            res.status(500).json({ error: "Error interno del servidor"});
         }
     }
 

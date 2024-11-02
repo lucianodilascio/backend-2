@@ -4,22 +4,22 @@ const socket = io();
 
 socket.on("productos", (data) => {
 
-  console.log(data);
-  console.log("Array:", Array.isArray(data));
+  // console.log(data);
+  // console.log("Array:", Array.isArray(data));
 
   renderProductos(data);
 });
 
 const renderProductos = (productos) => {
   const contenedorProductos = document.getElementById("contenedorProductos");
-  console.log(contenedorProductos);
+  //console.log(contenedorProductos);
   if (!contenedorProductos) {
     console.error("Contenedor de productos no encontrado.");
     return;
   }
   contenedorProductos.innerHTML = "";
-  
-productos.forEach( item => {
+
+  productos.forEach(item => {
     const card = document.createElement("div");
     // card.classList.add("card");
     card.innerHTML = `
@@ -37,7 +37,7 @@ productos.forEach( item => {
     `;
     contenedorProductos.appendChild(card);
 
-  
+
 
     const button = card.querySelector(".btnEliminar");
 
@@ -57,8 +57,8 @@ const eliminarProducto = (id) => {
 
   socket.emit("eliminarProducto", id);
 
-  console.log(id);
-  
+  //console.log(id);
+
 }
 
 
@@ -67,23 +67,23 @@ document.getElementById('formAgregarProducto').addEventListener('submit', (e) =>
 
   e.preventDefault();
 
-  
+
   const producto = {
 
-      title: document.getElementById('title').value,
-      description: document.getElementById('description').value,
-      price: parseFloat(document.getElementById('price').value),
-      code: document.getElementById('code').value,
-      stock: parseInt(document.getElementById('stock').value),
-      category: document.getElementById('category').value
+    title: document.getElementById('title').value,
+    description: document.getElementById('description').value,
+    price: parseFloat(document.getElementById('price').value),
+    code: document.getElementById('code').value,
+    stock: parseInt(document.getElementById('stock').value),
+    category: document.getElementById('category').value
 
-      
+
   };
 
 
   socket.emit("nuevoProducto", producto);
 
-  
-  
+
+
 
 });

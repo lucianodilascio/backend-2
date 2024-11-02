@@ -30,7 +30,6 @@ class CartDao {
     }
 
 
-
 }
 
 export default new CartDao();

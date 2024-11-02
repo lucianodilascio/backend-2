@@ -8,6 +8,10 @@ class ProductDao {
 
     }
 
+    async paginate(query, options) {
+        return await ProductModel.paginate(query, options);
+    }
+
 
     async find(query) {
         return await ProductModel.find(query);
@@ -28,11 +32,13 @@ class ProductDao {
         return await ProductModel.findByIdAndDelete(id);
     }
 
-    async findOne(query){
+    async findOne(query) {
         return await ProductModel.findOne(query);
     }
 
-    
+
+
+
 
 }
 

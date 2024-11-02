@@ -24,9 +24,12 @@ async deleteUser(id) {
     return await userDao.findByIdAndDelete(id);
 }
 
+async getUserByCart(cart) {
+
+    return await userDao.findOne(cart);
 
 }
 
-
+}
 
 export default new UserRepository();

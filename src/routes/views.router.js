@@ -2,15 +2,17 @@ import express from "express";
 import { Router } from "express";
 import productRouter from "./products.router.js";
 import cartsRouter from "./carts.router.js";
-import ProductManager from "../dao/db/product-manager-db.js";
+//import ProductManager from "../dao/db/product-manager-db.js";
 import multer from "multer";
 import ProductModel from "../dao/models/product.model.js";
 import { onlyAdmin, onlyUser } from "../middleware/auth.js";
 import passport from "passport";
+import { productService } from "../services/index.js";
+
 
 const router = Router();
 
- const productManager = new ProductManager();
+ //const productManager = new ProductManager();
 
 
 router.use("/api/products", productRouter);
@@ -22,7 +24,8 @@ router.use("/static", express.static("./src/public"));
 
 router.get("/realtimeproducts", passport.authenticate("current", { session: false }), onlyAdmin, async (req, res) => {
   try {
-    const productos = await productManager.getProducts();
+    const productos = await productService.paginateProducts({}, {});
+    console.log(productos);
     res.render("realtimeproducts", { productos: productos.docs });
 
 
@@ -35,11 +38,13 @@ router.get("/realtimeproducts", passport.authenticate("current", { session: fals
 
 router.get("/products", passport.authenticate("current", { session: false }), onlyUser, async (req, res) => {
 
-  let page = req.query.page || 1;
+  let page = req.query.page || 4;
   let limit = req.query.limit || 3;
   const user = req.user;
+  const options = {page, limit};
 
-  const productosLista = await ProductModel.paginate({}, { limit, page });
+  //const productosLista = await ProductModel.paginate({}, { limit, page });
+  const productosLista = await productService.paginateProducts({}, options);
   const productosListaFinal = productosLista.docs.map(elemento => {
     const { _id, ...rest } = elemento.toObject();
     return rest

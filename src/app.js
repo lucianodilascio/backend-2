@@ -5,17 +5,19 @@ import viewsRouter from "./routes/views.router.js";
 import sessionsRouter from "./routes/sessions.router.js"
 import productRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
-import ProductManager from "./dao/db/product-manager-db.js";
+//import ProductManager from "./dao/db/product-manager-db.js";
 import cookieParser from "cookie-parser";
 import "./database.js";
 import passport from "passport";
 import initializePassport from "./config/passport.config.js";
+import { productService } from "./services/index.js";
+
 
 
 const app = express();
 const PUERTO = 8080;
 
-const manager = new ProductManager();
+//const manager = new ProductManager();
 
 
 app.engine("handlebars", exphbs.engine());
@@ -25,9 +27,10 @@ app.set("views", "./src/views");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/static", express.static("./src/public"));
-//app.use(cookieParser());
+//app.use("/static", express.static("./src/public"));
 
+//app.use(cookieParser());
+app.use(express.static("./src/public"));
 
 
 
@@ -63,34 +66,33 @@ const io = new Server(httpServer);
 io.on("connection", async (socket) => {
   console.log("Un cliente se comunica conmigo");
 
-  const productos = await manager.getProducts()
+  const productos = await productService.getProducts();
 
 
-  socket.emit("productos", productos.docs);
+  socket.emit("productos", productos);
 
   ////////////////////
 
 
   socket.on("eliminarProducto", async (id) => {
 
-    await manager.deleteProduct(id);
+    await productService.deleteProduct(id);
 
-    const productosActualizados = await manager.getProducts();
+    const productosActualizados = await productService.getProducts();
 
-    io.sockets.emit("productos", productosActualizados.docs);
+    io.sockets.emit("productos", productosActualizados);
   });
 
 
   socket.on("nuevoProducto", async (producto) => {
 
-    console.log(producto);
+    //console.log(producto);
     const { title, description, price, code, stock, category } = producto
 
-    await manager.addProduct(producto);
+    await productService.createProduct(producto);
 
-    const productosActualizados = await manager.getProducts();
+    const productosActualizados = await productService.getProducts();
 
-    io.sockets.emit("productos", productosActualizados.docs);
+    io.sockets.emit("productos", productosActualizados);
   });
 });
-

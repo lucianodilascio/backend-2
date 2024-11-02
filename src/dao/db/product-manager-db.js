@@ -1,3 +1,4 @@
+/*
 import ProductModel from "../models/product.model.js";
 
 class ProductManager {
@@ -70,6 +71,7 @@ class ProductManager {
             const hasNextPage = page < totalPages;
     
             return {
+
                 docs: productos,
                 totalPages,
                 prevPage: hasPrevPage ? page - 1 : null,
@@ -135,4 +137,4 @@ class ProductManager {
     }
 }
 
-export default ProductManager;
+export default ProductManager; */
